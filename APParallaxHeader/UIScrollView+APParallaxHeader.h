@@ -40,7 +40,7 @@ typedef NS_ENUM(NSUInteger, APParallaxTrackingState) {
 
 @interface APParallaxView : UIView
 
-@property (weak) id<APParallaxViewDelegate> delegate;
+@property (nonatomic, weak) id<APParallaxViewDelegate> delegate;
 
 @property (nonatomic, readonly) APParallaxTrackingState state;
 @property (nonatomic, strong) UIImageView *imageView;
