@@ -21,6 +21,8 @@
 
 @property(nonatomic, assign) BOOL isObserving;
 
+-(CGFloat)heightForOrientation:(UIInterfaceOrientation)orientation;
+
 @end
 
 
@@ -206,13 +208,8 @@ static char UIScrollViewParallaxView;
             newInset.top = heightByRatio;
             self.contentInset = newInset;
         } else {
-            CGFloat heightForCurrentOrientation;
-            if (UIInterfaceOrientationIsLandscape(interfaceOrientation)) {
-                heightForCurrentOrientation = self.parallaxView.parallaxLandscapeHeight;
-            } else {
-                heightForCurrentOrientation = self.parallaxView.parallaxPortraitHeight;
-            }
-            
+            CGFloat heightForCurrentOrientation = [self.parallaxView heightForOrientation:interfaceOrientation];
+
             CGRect frame = self.parallaxView.frame;
             frame.size.height = heightForCurrentOrientation;
             self.parallaxView.frame = frame;
@@ -375,17 +372,35 @@ static char UIScrollViewParallaxView;
     }
     
     if(self.state == APParallaxTrackingActive) {
+        CGFloat heightForCurrentOrientation = [self heightForOrientation:[UIApplication sharedApplication].statusBarOrientation];
+
         CGFloat yOffset = contentOffset.y*-1;
+        CGRect newFrame;
+        if (yOffset <= heightForCurrentOrientation) {
+            CGRect rect = self.frame;
+            rect.origin.y = -heightForCurrentOrientation;
+            rect.size.height = heightForCurrentOrientation;
+            newFrame = rect;
+        }
+        else {
+            newFrame = CGRectMake(0, contentOffset.y, CGRectGetWidth(self.frame), yOffset);
+        }
         if ([self.delegate respondsToSelector:@selector(parallaxView:willChangeFrame:)]) {
             [self.delegate parallaxView:self willChangeFrame:self.frame];
         }
         
-        [self setFrame:CGRectMake(0, contentOffset.y, CGRectGetWidth(self.frame), yOffset)];
+        [self setFrame:newFrame];
         
         if ([self.delegate respondsToSelector:@selector(parallaxView:didChangeFrame:)]) {
             [self.delegate parallaxView:self didChangeFrame:self.frame];
         }
     }
 }
+
+
+-(CGFloat)heightForOrientation:(UIInterfaceOrientation)orientation {
+    return (UIInterfaceOrientationIsLandscape(orientation) ? self.parallaxLandscapeHeight : self.parallaxPortraitHeight);
+}
+
 
 @end
